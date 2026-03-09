@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { PushNotificationService } from '../../core/services/push-notification.service';
 import { BoardStore } from '../../core/stores/board.store';
 import { RecipesStore } from '../../core/stores/recipes.store';
 import { AddRecipeBarComponent } from './components/add-recipe-bar/add-recipe-bar.component';
@@ -31,6 +32,7 @@ export class RecipesPage implements OnInit {
   private readonly recipesStore = inject(RecipesStore);
   private readonly boardStore = inject(BoardStore);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly pushNotificationService = inject(PushNotificationService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -58,6 +60,7 @@ export class RecipesPage implements OnInit {
       const board = await this.boardStore.loadOrCreateBoard();
       if (!board?.id) return;
       await this.recipesStore.loadRecipes(board.id);
+      await this.pushNotificationService.requestPermissionAndSubscribe();
       await this.consumeSharedUrlParams();
     } finally {
       this.initialLoading.set(false);

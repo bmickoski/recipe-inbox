@@ -77,4 +77,8 @@ export class ApiService {
   ) {
     return this.http.patch<Recipe>(`${this.baseUrl}/recipes/${id}`, body);
   }
+
+  subscribePush(body: { endpoint: string; p256dh: string; auth: string }) {
+    return this.http.post<{ ok: boolean }>(`${this.baseUrl}/push/subscribe`, body);
+  }
 }

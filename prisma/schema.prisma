@@ -27,6 +27,7 @@ model User {
   memberships  Member[]
   sentInvites  BoardInvite[] @relation("BoardInviteSender")
   passwordResetTokens PasswordResetToken[]
+  pushSubscriptions PushSubscription[]
 }
 
 model Board {
@@ -97,4 +98,17 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId, expiresAt])
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

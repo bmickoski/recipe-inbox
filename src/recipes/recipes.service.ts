@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import ogs from 'open-graph-scraper';
 import { PrismaService } from '../prisma/prisma.service';
+import { PushService } from '../push/push.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { RecipeStatusDto, UpdateRecipeDto } from './dto/update-recipe.dto';
 
@@ -14,7 +15,10 @@ const MAX_METADATA_DESCRIPTION = 320;
 
 @Injectable()
 export class RecipesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pushService: PushService,
+  ) {}
 
   async create(data: CreateRecipeDto, userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -33,7 +37,7 @@ export class RecipesService {
     const normalizedUrl = this.normalizeUrl(data.url);
     const metadata = await this.extractMetadata(normalizedUrl);
 
-    return this.prisma.recipe.create({
+    const recipe = await this.prisma.recipe.create({
       data: {
         url: normalizedUrl,
         boardId: data.boardId,
@@ -47,6 +51,13 @@ export class RecipesService {
         tags: [],
       },
     });
+
+    void this.pushService.notifyBoardMembers(data.boardId, userId, {
+      title: 'New recipe added!',
+      body: recipe.title ?? 'A new recipe was saved to your board',
+    });
+
+    return recipe;
   }
 
   async findByBoard(boardId: string, userId: string) {

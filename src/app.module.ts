@@ -8,6 +8,7 @@ import { BoardsModule } from './boards/boards.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
+import { PushModule } from './push/push.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { RequestLoggerMiddleware } from './common/middleware/request-logger.midd
     AuthModule,
     RecipesModule,
     BoardsModule,
+    PushModule,
   ],
   controllers: [AppController],
   providers: [AppService],
