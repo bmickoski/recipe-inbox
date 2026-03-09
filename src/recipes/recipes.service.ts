@@ -1,8 +1,13 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import ogs from 'open-graph-scraper';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
-import { UpdateRecipeDto } from './dto/update-recipe.dto';
+import { RecipeStatusDto, UpdateRecipeDto } from './dto/update-recipe.dto';
 
 @Injectable()
 export class RecipesService {
@@ -91,7 +96,7 @@ export class RecipesService {
     }
 
     const nextData: {
-      status?: 'WANT_TO_TRY' | 'COOKED';
+      status?: RecipeStatusDto;
       cookedAt?: Date | null;
       tags?: string[];
       notes?: string | null;
@@ -99,7 +104,8 @@ export class RecipesService {
 
     if (data.status) {
       nextData.status = data.status;
-      nextData.cookedAt = data.status === 'COOKED' ? new Date() : null;
+      nextData.cookedAt =
+        data.status === RecipeStatusDto.COOKED ? new Date() : null;
     }
     if (data.tags) {
       nextData.tags = data.tags;

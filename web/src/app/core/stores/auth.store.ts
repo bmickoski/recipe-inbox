@@ -67,7 +67,7 @@ export const AuthStore = signalStore(
             error: null,
           });
           await router.navigateByUrl(resolveRedirectTarget(router.url));
-        } catch (error: any) {
+        } catch (error: unknown) {
           patchState(store, {
             loading: false,
             error: getErrorMessage(error, 'Login failed'),
@@ -90,7 +90,7 @@ export const AuthStore = signalStore(
             error: null,
           });
           await router.navigateByUrl(resolveRedirectTarget(router.url));
-        } catch (error: any) {
+        } catch (error: unknown) {
           patchState(store, {
             loading: false,
             error: getErrorMessage(error, 'Registration failed'),
@@ -111,8 +111,16 @@ export const AuthStore = signalStore(
   ),
 );
 
-function getErrorMessage(error: any, fallback: string) {
-  const message = error?.error?.message;
+type HttpLikeError = {
+  status?: number;
+  error?: {
+    message?: string | string[];
+  };
+};
+
+function getErrorMessage(error: unknown, fallback: string) {
+  const parsed = parseHttpLikeError(error);
+  const message = parsed.error?.message;
 
   if (Array.isArray(message)) {
     return message.join(', ');
@@ -122,11 +130,18 @@ function getErrorMessage(error: any, fallback: string) {
     return message;
   }
 
-  if (error?.status === 0) {
+  if (parsed.status === 0) {
     return 'Cannot reach API. Check backend is running and CORS is enabled.';
   }
 
   return fallback;
+}
+
+function parseHttpLikeError(error: unknown): HttpLikeError {
+  if (typeof error === 'object' && error !== null) {
+    return error as HttpLikeError;
+  }
+  return {};
 }
 
 function resolveRedirectTarget(currentUrl: string): string {

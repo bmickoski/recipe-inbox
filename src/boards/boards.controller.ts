@@ -1,5 +1,10 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { JwtUser } from '../auth/types/jwt-user.type';
@@ -53,12 +58,18 @@ export class BoardsController {
   @ApiOperation({ summary: 'Accept board invite by token' })
   @UseGuards(JwtAuthGuard)
   @Post('invites/:token/accept')
-  async acceptInvite(@Param('token') token: string, @CurrentUser() user: JwtUser) {
+  async acceptInvite(
+    @Param('token') token: string,
+    @CurrentUser() user: JwtUser,
+  ) {
     return this.boardsService.acceptInvite(token, user.sub);
   }
 
   @ApiOperation({ summary: 'List recipes by board' })
-  @ApiParam({ name: 'boardId', example: '77ec39cc-67bb-47f3-9dc4-d3de2ed4b6e5' })
+  @ApiParam({
+    name: 'boardId',
+    example: '77ec39cc-67bb-47f3-9dc4-d3de2ed4b6e5',
+  })
   @UseGuards(JwtAuthGuard)
   @Get(':boardId/recipes')
   async getRecipes(
@@ -69,11 +80,23 @@ export class BoardsController {
   }
 }
 
-function mapBoard(board: any) {
+type BoardMemberView = {
+  userId: string;
+  displayName: string;
+  user: { email: string | null } | null;
+};
+
+type BoardView = {
+  id: string;
+  name: string;
+  members: BoardMemberView[];
+};
+
+function mapBoard(board: BoardView) {
   return {
     id: board.id,
     name: board.name,
-    members: (board.members ?? []).map((member: any) => ({
+    members: board.members.map((member) => ({
       userId: member.userId,
       email: member.user?.email ?? '',
       displayName: member.displayName,

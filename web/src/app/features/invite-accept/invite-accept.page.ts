@@ -58,8 +58,8 @@ export class InviteAcceptPage implements OnInit {
     try {
       const invite = await firstValueFrom(this.api.getInvite(token));
       this.invite.set(invite);
-    } catch (error: any) {
-      this.error.set(error?.error?.message ?? 'Invalid or expired invite link');
+    } catch (error: unknown) {
+      this.error.set(getHttpErrorMessage(error, 'Invalid or expired invite link'));
     }
   }
 
@@ -84,13 +84,14 @@ export class InviteAcceptPage implements OnInit {
       sessionStorage.removeItem(INVITE_TOKEN_STORAGE_KEY);
       this.snackBar.open('Invite accepted', undefined, { duration: 2500 });
       await this.router.navigateByUrl('/recipes');
-    } catch (error: any) {
-      if (error?.status === 401) {
+    } catch (error: unknown) {
+      const parsed = parseHttpLikeError(error);
+      if (parsed.status === 401) {
         const redirectTo = `/board/invite?token=${encodeURIComponent(token)}`;
         await this.router.navigateByUrl(`/auth?redirectTo=${encodeURIComponent(redirectTo)}`);
         return;
       }
-      this.error.set(error?.error?.message ?? 'Failed to accept invite');
+      this.error.set(getHttpErrorMessage(error, 'Failed to accept invite'));
     } finally {
       this.loading.set(false);
     }
@@ -98,3 +99,20 @@ export class InviteAcceptPage implements OnInit {
 }
 
 const INVITE_TOKEN_STORAGE_KEY = 'recipe_inbox_pending_invite_token';
+
+type HttpLikeError = {
+  status?: number;
+  error?: { message?: string };
+};
+
+function parseHttpLikeError(error: unknown): HttpLikeError {
+  if (typeof error === 'object' && error !== null) {
+    return error as HttpLikeError;
+  }
+  return {};
+}
+
+function getHttpErrorMessage(error: unknown, fallback: string): string {
+  const parsed = parseHttpLikeError(error);
+  return parsed.error?.message ?? fallback;
+}

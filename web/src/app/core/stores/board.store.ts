@@ -67,10 +67,10 @@ export const BoardStore = signalStore(
         });
 
         return store.board();
-      } catch (error: any) {
+      } catch (error: unknown) {
         patchState(store, {
           loading: false,
-          error: error?.error?.message ?? 'Failed to initialize board',
+          error: getHttpErrorMessage(error, 'Failed to initialize board'),
         });
         return null;
       }
@@ -85,10 +85,10 @@ export const BoardStore = signalStore(
         const invite = await firstValueFrom(api.createInvite(boardId, email));
         patchState(store, { invite, loading: false, error: null });
         return invite;
-      } catch (error: any) {
+      } catch (error: unknown) {
         patchState(store, {
           loading: false,
-          error: error?.error?.message ?? 'Failed to create invite',
+          error: getHttpErrorMessage(error, 'Failed to create invite'),
         });
         return null;
       }
@@ -101,10 +101,10 @@ export const BoardStore = signalStore(
         patchState(store, { loading: false, error: null });
         await this.loadOrCreateBoard();
         return true;
-      } catch (error: any) {
+      } catch (error: unknown) {
         patchState(store, {
           loading: false,
-          error: error?.error?.message ?? 'Failed to accept invite',
+          error: getHttpErrorMessage(error, 'Failed to accept invite'),
         });
         return false;
       }
@@ -119,3 +119,13 @@ export const BoardStore = signalStore(
     },
   })),
 );
+
+type HttpLikeError = { error?: { message?: string } };
+
+function getHttpErrorMessage(error: unknown, fallback: string): string {
+  if (typeof error === 'object' && error !== null) {
+    const parsed = error as HttpLikeError;
+    if (parsed.error?.message) return parsed.error.message;
+  }
+  return fallback;
+}

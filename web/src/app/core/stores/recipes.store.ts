@@ -80,10 +80,10 @@ export const RecipesStore = signalStore(
           loading: false,
           error: null,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         patchState(store, {
           loading: false,
-          error: error?.error?.message ?? 'Failed to load recipes',
+          error: getHttpErrorMessage(error, 'Failed to load recipes'),
         });
       }
     },
@@ -98,10 +98,10 @@ export const RecipesStore = signalStore(
           loading: false,
           error: null,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         patchState(store, {
           loading: false,
-          error: error?.error?.message ?? 'Failed to save recipe',
+          error: getHttpErrorMessage(error, 'Failed to save recipe'),
         });
       }
     },
@@ -115,10 +115,10 @@ export const RecipesStore = signalStore(
           loading: false,
           error: null,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         patchState(store, {
           loading: false,
-          error: error?.error?.message ?? 'Failed to delete recipe',
+          error: getHttpErrorMessage(error, 'Failed to delete recipe'),
         });
       }
     },
@@ -204,4 +204,14 @@ function normalizeTags(tags: string[]): string[] {
 
 function normalizeTag(tag: string): string {
   return tag.trim().toLowerCase();
+}
+
+type HttpLikeError = { error?: { message?: string } };
+
+function getHttpErrorMessage(error: unknown, fallback: string): string {
+  if (typeof error === 'object' && error !== null) {
+    const parsed = error as HttpLikeError;
+    if (parsed.error?.message) return parsed.error.message;
+  }
+  return fallback;
 }

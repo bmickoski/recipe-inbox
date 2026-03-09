@@ -51,11 +51,7 @@ export class BoardsService {
     });
   }
 
-  async createInvite(
-    boardId: string,
-    invitedBy: string,
-    invitedEmail: string,
-  ) {
+  async createInvite(boardId: string, invitedBy: string, invitedEmail: string) {
     const board = await this.prisma.board.findFirst({
       where: {
         id: boardId,

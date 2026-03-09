@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
+import { URL } from 'node:url';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {

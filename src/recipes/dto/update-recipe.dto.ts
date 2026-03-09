@@ -1,5 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export enum RecipeStatusDto {
   WANT_TO_TRY = 'WANT_TO_TRY',
@@ -7,7 +13,10 @@ export enum RecipeStatusDto {
 }
 
 export class UpdateRecipeDto {
-  @ApiPropertyOptional({ enum: RecipeStatusDto, example: RecipeStatusDto.COOKED })
+  @ApiPropertyOptional({
+    enum: RecipeStatusDto,
+    example: RecipeStatusDto.COOKED,
+  })
   @IsOptional()
   @IsEnum(RecipeStatusDto)
   status?: RecipeStatusDto;
@@ -18,7 +27,9 @@ export class UpdateRecipeDto {
   @IsString({ each: true })
   tags?: string[];
 
-  @ApiPropertyOptional({ example: 'Kids loved this. Add extra garlic next time.' })
+  @ApiPropertyOptional({
+    example: 'Kids loved this. Add extra garlic next time.',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(1000)
