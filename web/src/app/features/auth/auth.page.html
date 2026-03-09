@@ -70,6 +70,9 @@
           }
         </mat-form-field>
 
+        @if (localError()) {
+          <p class="error">{{ localError() }}</p>
+        }
         @if (error()) {
           <p class="error">{{ error() }}</p>
         }
@@ -77,6 +80,10 @@
         <button mat-raised-button color="primary" type="submit" [disabled]="loading()">
           {{ loading() ? 'Please wait...' : mode() === 'login' ? 'Login' : 'Register' }}
         </button>
+
+        @if (mode() === 'login') {
+          <a class="forgot-link" routerLink="/auth/forgot-password">Forgot password?</a>
+        }
       </form>
     </mat-card-content>
   </mat-card>

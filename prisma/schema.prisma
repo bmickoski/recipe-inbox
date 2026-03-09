@@ -26,6 +26,7 @@ model User {
   recipes      Recipe[]
   memberships  Member[]
   sentInvites  BoardInvite[] @relation("BoardInviteSender")
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Board {
@@ -83,4 +84,17 @@ model Recipe {
   boardId     String
   board       Board    @relation(fields: [boardId], references: [id])
   user        User     @relation(fields: [createdBy], references: [id])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, expiresAt])
 }

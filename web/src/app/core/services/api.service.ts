@@ -24,6 +24,19 @@ export class ApiService {
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login`, body);
   }
 
+  forgotPassword(email: string) {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/auth/forgot-password`, {
+      email,
+    });
+  }
+
+  resetPassword(token: string, password: string) {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/auth/reset-password`, {
+      token,
+      password,
+    });
+  }
+
   createBoard(name: string) {
     return this.http.post<Board>(`${this.baseUrl}/boards`, { name });
   }

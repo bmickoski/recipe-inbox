@@ -1,10 +1,11 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(node -e \"console.log\\(require\\(''crypto''\\).randomBytes\\(48\\).toString\\(''base64''\\)\\)\")",
+      "Bash(ls -la /c/Users/bojan.mickoski/Personal/projects/recipe-inbox-api/*.env*)"
+    ],
     "additionalDirectories": [
       "C:\\Users\\bojan.mickoski\\.claude\\projects\\c--Users-bojan-mickoski-Personal-projects-recipe-inbox-api"
-    ],
-    "allow": [
-      "Bash(node -e \"console.log\\(require\\(''crypto''\\).randomBytes\\(48\\).toString\\(''base64''\\)\\)\")"
     ]
   }
 }

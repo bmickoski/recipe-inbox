@@ -104,6 +104,36 @@ export const AuthStore = signalStore(
         await router.navigateByUrl('/auth');
       },
 
+      async forgotPassword(email: string) {
+        patchState(store, { loading: true, error: null });
+        try {
+          await firstValueFrom(api.forgotPassword(email));
+          patchState(store, { loading: false, error: null });
+          return true;
+        } catch (error: unknown) {
+          patchState(store, {
+            loading: false,
+            error: getErrorMessage(error, 'Failed to send reset email'),
+          });
+          return false;
+        }
+      },
+
+      async resetPassword(token: string, password: string) {
+        patchState(store, { loading: true, error: null });
+        try {
+          await firstValueFrom(api.resetPassword(token, password));
+          patchState(store, { loading: false, error: null });
+          return true;
+        } catch (error: unknown) {
+          patchState(store, {
+            loading: false,
+            error: getErrorMessage(error, 'Failed to reset password'),
+          });
+          return false;
+        }
+      },
+
       clearError() {
         patchState(store, { error: null });
       },

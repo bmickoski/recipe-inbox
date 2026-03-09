@@ -12,7 +12,7 @@
     @if (recipe.status === 'COOKED' && recipe.cookedAt) {
       <small class="cooked-at">{{ cookedLabel() }}</small>
     }
-    <p>{{ recipe.description || recipe.url }}</p>
+    <p>{{ (recipe.description && recipe.description.length > 150 ? recipe.description.slice(0, 150) + '…' : recipe.description) || recipe.url }}</p>
     <mat-chip-listbox [multiple]="true" aria-label="Recipe tags and status">
       <mat-chip-option
         [selected]="recipe.status === 'COOKED'"

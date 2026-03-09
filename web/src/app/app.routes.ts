@@ -8,6 +8,20 @@ export const routes: Routes = [
       import('./features/auth/auth.page').then((m) => m.AuthPage),
   },
   {
+    path: 'auth/forgot-password',
+    loadComponent: () =>
+      import('./features/forgot-password/forgot-password.page').then(
+        (m) => m.ForgotPasswordPage,
+      ),
+  },
+  {
+    path: 'auth/reset-password',
+    loadComponent: () =>
+      import('./features/reset-password/reset-password.page').then(
+        (m) => m.ResetPasswordPage,
+      ),
+  },
+  {
     path: 'recipes',
     canActivate: [authGuard],
     loadComponent: () =>
