@@ -33,7 +33,7 @@
     <p class="error">{{ error() }}</p>
   }
 
-  @if (loading()) {
+  @if (initialLoading() || loading()) {
     <div class="cards">
       @for (item of skeletons; track item) {
         <mat-card class="recipe-card skeleton-card">
@@ -46,7 +46,7 @@
     </div>
   }
 
-  @if (!loading() && allRecipes().length === 0) {
+  @if (!initialLoading() && !loading() && allRecipes().length === 0) {
     <mat-card class="empty-state">
       <mat-card-content>
         <mat-icon>bookmark_border</mat-icon>
@@ -59,7 +59,7 @@
     </mat-card>
   }
 
-  @if (!loading() && allRecipes().length > 0 && recipes().length === 0) {
+  @if (!initialLoading() && !loading() && allRecipes().length > 0 && recipes().length === 0) {
     <mat-card class="empty-state">
       <mat-card-content>
         <mat-icon>filter_alt_off</mat-icon>

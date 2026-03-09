@@ -47,16 +47,21 @@ export class RecipesPage implements OnInit {
   readonly loading = this.recipesStore.loading;
   readonly error = this.recipesStore.error;
   readonly activeCreatedBy = this.recipesStore.activeCreatedBy;
+  readonly initialLoading = signal(true);
 
   ngOnInit(): void {
     void this.initializePage();
   }
 
   private async initializePage() {
-    const board = await this.boardStore.loadOrCreateBoard();
-    if (!board?.id) return;
-    await this.recipesStore.loadRecipes(board.id);
-    await this.consumeSharedUrlParams();
+    try {
+      const board = await this.boardStore.loadOrCreateBoard();
+      if (!board?.id) return;
+      await this.recipesStore.loadRecipes(board.id);
+      await this.consumeSharedUrlParams();
+    } finally {
+      this.initialLoading.set(false);
+    }
   }
 
   async saveRecipe() {

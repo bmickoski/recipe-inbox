@@ -9,6 +9,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
 import { RecipeStatusDto, UpdateRecipeDto } from './dto/update-recipe.dto';
 
+const MAX_METADATA_TITLE = 120;
+const MAX_METADATA_DESCRIPTION = 320;
+
 @Injectable()
 export class RecipesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -121,9 +124,12 @@ export class RecipesService {
     try {
       const { result } = await ogs({ url });
       return {
-        title: result.ogTitle ?? null,
+        title: sanitizeMetadataText(result.ogTitle, MAX_METADATA_TITLE),
         image: result.ogImage?.[0]?.url ?? null,
-        description: result.ogDescription ?? null,
+        description: sanitizeMetadataText(
+          result.ogDescription,
+          MAX_METADATA_DESCRIPTION,
+        ),
       };
     } catch {
       return {
@@ -154,4 +160,17 @@ export class RecipesService {
     });
     return !!board;
   }
+}
+
+function sanitizeMetadataText(
+  value: string | null | undefined,
+  maxLength: number,
+): string | null {
+  if (!value) return null;
+
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (!normalized) return null;
+
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength - 3)}...`;
 }

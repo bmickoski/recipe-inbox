@@ -24,7 +24,7 @@ export class MailService {
       return;
     }
 
-    await this.resend.emails.send({
+    const result = await this.resend.emails.send({
       from: this.fromEmail,
       to,
       subject: 'Reset your Recipe Inbox password',
@@ -34,5 +34,16 @@ export class MailService {
         <p>This link expires in 1 hour.</p>
       `,
     });
+
+    if (result.error) {
+      this.logger.error(
+        `Failed sending password reset email to ${to}: ${result.error.message}`,
+      );
+      return;
+    }
+
+    this.logger.log(
+      `Password reset email queued for ${to}. Resend ID: ${result.data?.id ?? 'n/a'}`,
+    );
   }
 }
