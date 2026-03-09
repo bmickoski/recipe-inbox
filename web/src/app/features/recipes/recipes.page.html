@@ -1,5 +1,10 @@
 <section class="recipes-shell">
-  <h1>Saved Recipes @if (!loading() && recipes().length > 0) {<span class="count">({{ recipes().length }})</span>}</h1>
+  <h1>
+    Saved Recipes
+    @if (!loading() && recipes().length > 0) {
+      <span class="count">({{ recipes().length }})</span>
+    }
+  </h1>
 
   <app-add-recipe-bar
     [value]="recipeUrl()"
@@ -8,10 +13,7 @@
     (save)="saveRecipe()"
   />
 
-  <app-status-filter-bar
-    [activeStatus]="activeStatus()"
-    (statusChange)="onStatusChange($event)"
-  />
+  <app-status-filter-bar [activeStatus]="activeStatus()" (statusChange)="onStatusChange($event)" />
 
   <app-tag-filter-bar
     [tags]="tagCounts()"
@@ -19,11 +21,13 @@
     (tagChange)="onTagChange($event)"
   />
 
-  <app-saved-by-filter-bar
-    [members]="members()"
-    [activeCreatedBy]="activeCreatedBy()"
-    (createdByChange)="onCreatedByChange($event)"
-  />
+  @if (members().length > 1) {
+    <app-saved-by-filter-bar
+      [members]="members()"
+      [activeCreatedBy]="activeCreatedBy()"
+      (createdByChange)="onCreatedByChange($event)"
+    />
+  }
 
   @if (error()) {
     <p class="error">{{ error() }}</p>
@@ -47,7 +51,10 @@
       <mat-card-content>
         <mat-icon>bookmark_border</mat-icon>
         <h2>No recipes yet</h2>
-        <p>Paste any Instagram, TikTok, YouTube, or recipe website link above to save your first recipe.</p>
+        <p>
+          Paste any Instagram, TikTok, YouTube, or recipe website link above to save your first
+          recipe.
+        </p>
       </mat-card-content>
     </mat-card>
   }

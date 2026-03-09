@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import ogs from 'open-graph-scraper';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRecipeDto } from './dto/create-recipe.dto';
@@ -128,9 +128,12 @@ export class RecipesService {
     }
   }
 
-  private normalizeUrl(rawUrl: string) {
-    const normalized = new URL(rawUrl.trim());
-    return normalized.toString();
+  private normalizeUrl(rawUrl: string): string {
+    try {
+      return new URL(rawUrl.trim()).toString();
+    } catch {
+      throw new BadRequestException('Invalid URL format');
+    }
   }
 
   private async hasBoardAccess(boardId: string, userId: string) {

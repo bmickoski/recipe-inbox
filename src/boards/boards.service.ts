@@ -150,7 +150,9 @@ export class BoardsService {
     }
 
     if (user.email.toLowerCase() !== invite.invitedEmail.toLowerCase()) {
-      throw new NotFoundException('Invite not found for this user');
+      throw new NotFoundException(
+        'This invite was sent to a different email address. Please register with the email that received the invite.',
+      );
     }
 
     await this.prisma.member.upsert({

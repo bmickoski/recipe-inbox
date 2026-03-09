@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthResponse } from '../models/auth.model';
 import { Board, BoardInvite, BoardInvitePreview } from '../models/board.model';
 import { Recipe } from '../models/recipe.model';
+import { environment } from '../../../environments/environment';
 
 type Credentials = {
   email: string;
@@ -13,7 +14,7 @@ type Credentials = {
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:3000';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   register(body: Credentials) {
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/register`, body);
