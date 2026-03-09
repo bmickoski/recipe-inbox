@@ -1,0 +1,60 @@
+<section class="settings-shell">
+  <mat-card>
+    <mat-card-content>
+      <h1>Board Settings</h1>
+      <p>Invite your partner to join this board.</p>
+      <p class="note">
+        MVP note: we do not send email yet. This creates an invite link for you to share manually.
+      </p>
+
+      <p class="board-name">Current board: <strong>{{ board()?.name || '-' }}</strong></p>
+
+      @if ((board()?.members?.length ?? 0) > 0) {
+        <div class="members-box">
+          <p><strong>Current members</strong></p>
+          <ul>
+            @for (member of board()?.members ?? []; track member.userId) {
+              <li>{{ member.displayName || member.email }} ({{ member.email }})</li>
+            }
+          </ul>
+        </div>
+      }
+
+      <form (ngSubmit)="invite()">
+        <mat-form-field appearance="outline">
+          <mat-label>Partner email</mat-label>
+          <input
+            matInput
+            type="email"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            name="email"
+          />
+        </mat-form-field>
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading()">
+          Create Invite Link
+        </button>
+      </form>
+
+      @if (inviteUrl()) {
+        <div class="invite-box">
+          <p><strong>Invite link</strong></p>
+          <code>{{ inviteUrl() }}</code>
+          <div class="invite-actions">
+            <button mat-stroked-button type="button" (click)="copyInvite()">Copy Link</button>
+            <button mat-raised-button color="primary" type="button" (click)="shareInvite()">
+              Share
+            </button>
+          </div>
+          <p class="note">
+            Share this link with your partner. They can register directly from it — no extra steps needed.
+          </p>
+        </div>
+      }
+
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
+    </mat-card-content>
+  </mat-card>
+</section>

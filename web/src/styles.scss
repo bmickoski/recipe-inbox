@@ -1,0 +1,19 @@
+@use '@angular/material' as mat;
+
+html {
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: mat.$azure-palette,
+      typography: Inter,
+      density: 0,
+    )
+  );
+}
+
+body {
+  background: #f8fafc;
+  color: #0f172a;
+  font-family: Inter, 'Segoe UI', sans-serif;
+  margin: 0;
+}

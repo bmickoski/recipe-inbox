@@ -1,0 +1,46 @@
+.recipe-card img,
+.image-fallback {
+  border-radius: 0.5rem;
+  display: block;
+  margin-bottom: 0.75rem;
+  min-height: 180px;
+  max-height: 220px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.image-fallback {
+  align-items: center;
+  background: linear-gradient(135deg, #dbeafe, #e2e8f0);
+  display: flex;
+  justify-content: center;
+}
+
+.image-fallback span {
+  font-size: 2rem;
+}
+
+.recipe-card h3 {
+  margin: 0 0 0.4rem;
+}
+
+.recipe-card p {
+  color: #334155;
+  margin: 0.4rem 0 0.75rem;
+}
+
+.saved-by {
+  color: #64748b;
+  display: block;
+}
+
+.cooked-at {
+  color: #0f766e;
+  display: block;
+  margin-top: 0.15rem;
+}
+
+.recipe-card mat-form-field {
+  margin-top: 0.75rem;
+  width: 100%;
+}

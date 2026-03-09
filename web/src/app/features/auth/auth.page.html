@@ -1,0 +1,83 @@
+<section class="auth-shell">
+  <mat-card>
+    <mat-card-content>
+      <h1>Recipe Inbox</h1>
+      <p>Save social recipe links in one place.</p>
+
+      <mat-button-toggle-group
+        class="mode-switch"
+        [value]="mode()"
+        (change)="setMode($event)"
+        aria-label="Authentication mode"
+      >
+        <mat-button-toggle value="login">Login</mat-button-toggle>
+        <mat-button-toggle value="register">Register</mat-button-toggle>
+      </mat-button-toggle-group>
+
+      <form (ngSubmit)="submit()">
+        @if (mode() === 'register') {
+          <mat-form-field appearance="outline">
+            <mat-label>Display Name</mat-label>
+            <input
+              matInput
+              id="displayName"
+              name="displayName"
+              type="text"
+              [ngModel]="displayName()"
+              (ngModelChange)="displayName.set($event)"
+              required
+              minlength="2"
+            />
+          </mat-form-field>
+        }
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input
+            matInput
+            id="email"
+            name="email"
+            type="email"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            required
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            id="password"
+            name="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            required
+            minlength="8"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="togglePassword()"
+            [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+          >
+            <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (mode() === 'register') {
+            <mat-hint>Use at least 8 characters.</mat-hint>
+          }
+        </mat-form-field>
+
+        @if (error()) {
+          <p class="error">{{ error() }}</p>
+        }
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading()">
+          {{ loading() ? 'Please wait...' : mode() === 'login' ? 'Login' : 'Register' }}
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</section>

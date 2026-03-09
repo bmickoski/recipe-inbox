@@ -1,0 +1,62 @@
+<mat-card class="recipe-card">
+  @if (recipe.image) {
+    <img [src]="recipe.image" [alt]="recipe.title || 'Recipe image'" />
+  } @else {
+    <div class="image-fallback" aria-label="Recipe placeholder image">
+      <span>{{ placeholderEmoji() }}</span>
+    </div>
+  }
+  <mat-card-content>
+    <h3>{{ recipe.title || 'Untitled recipe' }}</h3>
+    <small class="saved-by">Saved by {{ savedBy }}</small>
+    @if (recipe.status === 'COOKED' && recipe.cookedAt) {
+      <small class="cooked-at">{{ cookedLabel() }}</small>
+    }
+    <p>{{ recipe.description || recipe.url }}</p>
+    <mat-chip-listbox [multiple]="true" aria-label="Recipe tags and status">
+      <mat-chip-option
+        [selected]="recipe.status === 'COOKED'"
+        (click)="toggleStatus.emit()"
+      >
+        {{ recipe.status === 'COOKED' ? 'Cooked it' : 'Want to try' }}
+      </mat-chip-option>
+      @for (tag of recipe.tags; track tag) {
+        <mat-chip-option selected (click)="toggleTag.emit(tag)">{{
+          toTagLabel(tag)
+        }}</mat-chip-option>
+      }
+      @for (tag of quickTags; track tag) {
+        @if (!recipe.tags.includes(tag)) {
+          <mat-chip-option (click)="toggleTag.emit(tag)">+ {{ toTagLabel(tag) }}</mat-chip-option>
+        }
+      }
+    </mat-chip-listbox>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Notes</mat-label>
+      <textarea
+        matInput
+        rows="2"
+        [ngModel]="recipe.notes ?? ''"
+        (blur)="onNotesBlur($any($event.target).value)"
+        placeholder="Add notes like 'too spicy, reduce chili'"
+      ></textarea>
+    </mat-form-field>
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-button type="button" (click)="open.emit()">
+      <mat-icon>open_in_new</mat-icon> View
+    </button>
+
+    @if (confirmDelete) {
+      <button mat-button type="button" color="warn" (click)="confirmDeleteClick.emit()">
+        Confirm?
+      </button>
+      <button mat-button type="button" (click)="cancelDelete.emit()">Cancel</button>
+    } @else {
+      <button mat-button type="button" color="warn" (click)="requestDelete.emit()">
+        Delete
+      </button>
+    }
+  </mat-card-actions>
+</mat-card>

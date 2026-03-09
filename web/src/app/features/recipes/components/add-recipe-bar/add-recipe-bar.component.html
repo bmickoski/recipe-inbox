@@ -1,0 +1,13 @@
+<form class="add-row" (ngSubmit)="save.emit()">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>Recipe URL</mat-label>
+    <input
+      matInput
+      placeholder="Paste Instagram/TikTok/YouTube/website URL"
+      name="recipeUrl"
+      [ngModel]="value"
+      (ngModelChange)="valueChange.emit($event)"
+    />
+  </mat-form-field>
+  <button mat-raised-button color="primary" type="submit" [disabled]="loading">Save</button>
+</form>

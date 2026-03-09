@@ -1,0 +1,14 @@
+<mat-chip-listbox
+  [value]="activeTag"
+  (change)="tagChange.emit($event.value)"
+  aria-label="Recipe tag filter"
+>
+  <mat-chip-option [value]="null">
+    All tags
+  </mat-chip-option>
+  @for (item of tags; track item.tag) {
+    <mat-chip-option [value]="item.tag">
+      {{ item.tag }} ({{ item.count }})
+    </mat-chip-option>
+  }
+</mat-chip-listbox>

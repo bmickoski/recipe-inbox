@@ -1,0 +1,49 @@
+.auth-shell {
+  margin: 3rem auto;
+  max-width: 460px;
+  padding: 0 1rem;
+}
+
+mat-card {
+  border-radius: 1rem;
+  box-shadow: 0 14px 30px rgb(15 23 42 / 10%);
+}
+
+mat-card-content {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+h1 {
+  font-size: 2rem;
+  margin: 0;
+}
+
+p {
+  color: #475569;
+  margin: 0;
+}
+
+.mode-switch {
+  width: 100%;
+}
+
+.auth-shell form {
+  display: grid;
+  gap: 0.25rem;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+form button[mat-raised-button] {
+  border-radius: 999px;
+  height: 42px;
+}
+
+.auth-shell .error {
+  color: #b91c1c;
+  margin: 0;
+}

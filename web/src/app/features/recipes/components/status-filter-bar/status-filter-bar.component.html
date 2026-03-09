@@ -1,0 +1,9 @@
+<mat-button-toggle-group
+  aria-label="Recipe status filter"
+  [value]="activeStatus"
+  (change)="statusChange.emit($event.value)"
+>
+  <mat-button-toggle value="ALL">All</mat-button-toggle>
+  <mat-button-toggle value="WANT_TO_TRY">Want to try</mat-button-toggle>
+  <mat-button-toggle value="COOKED">Cooked</mat-button-toggle>
+</mat-button-toggle-group>

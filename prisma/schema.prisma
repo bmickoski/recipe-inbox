@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RecipeStatus {
+  WANT_TO_TRY
+  COOKED
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  displayName  String
+  createdAt    DateTime @default(now())
+  passwordHash String?
+  boards       Board[]
+  recipes      Recipe[]
+  memberships  Member[]
+  sentInvites  BoardInvite[] @relation("BoardInviteSender")
+}
+
+model Board {
+  id        String   @id @default(uuid())
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+  owner     User     @relation(fields: [ownerId], references: [id])
+  recipes   Recipe[]
+  members   Member[]
+  invites   BoardInvite[]
+}
+
+model Member {
+  id          String   @id @default(uuid())
+  boardId     String
+  userId      String
+  displayName String
+  createdAt   DateTime @default(now())
+
+  board Board @relation(fields: [boardId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([boardId, userId])
+}
+
+model BoardInvite {
+  id           String       @id @default(uuid())
+  boardId      String
+  invitedEmail String
+  invitedBy    String
+  token        String       @unique
+  status       InviteStatus @default(PENDING)
+  createdAt    DateTime     @default(now())
+  acceptedAt   DateTime?
+
+  board  Board @relation(fields: [boardId], references: [id])
+  sender User  @relation("BoardInviteSender", fields: [invitedBy], references: [id])
+
+  @@index([boardId, status])
+}
+
+model Recipe {
+  id          String   @id @default(uuid())
+  url         String
+  title       String?
+  image       String?
+  description String?
+  status      RecipeStatus @default(WANT_TO_TRY)
+  cookedAt    DateTime?
+  notes       String?
+  tags        String[]
+  createdAt   DateTime @default(now())
+  createdBy   String
+  boardId     String
+  board       Board    @relation(fields: [boardId], references: [id])
+  user        User     @relation(fields: [createdBy], references: [id])
+}

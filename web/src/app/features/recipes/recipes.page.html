@@ -1,0 +1,81 @@
+<section class="recipes-shell">
+  <h1>Saved Recipes @if (!loading() && recipes().length > 0) {<span class="count">({{ recipes().length }})</span>}</h1>
+
+  <app-add-recipe-bar
+    [value]="recipeUrl()"
+    [loading]="loading()"
+    (valueChange)="recipeUrl.set($event)"
+    (save)="saveRecipe()"
+  />
+
+  <app-status-filter-bar
+    [activeStatus]="activeStatus()"
+    (statusChange)="onStatusChange($event)"
+  />
+
+  <app-tag-filter-bar
+    [tags]="tagCounts()"
+    [activeTag]="activeTag()"
+    (tagChange)="onTagChange($event)"
+  />
+
+  <app-saved-by-filter-bar
+    [members]="members()"
+    [activeCreatedBy]="activeCreatedBy()"
+    (createdByChange)="onCreatedByChange($event)"
+  />
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <div class="cards">
+      @for (item of skeletons; track item) {
+        <mat-card class="recipe-card skeleton-card">
+          <div class="skeleton-img"></div>
+          <div class="skeleton-line wide"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line short"></div>
+        </mat-card>
+      }
+    </div>
+  }
+
+  @if (!loading() && allRecipes().length === 0) {
+    <mat-card class="empty-state">
+      <mat-card-content>
+        <mat-icon>bookmark_border</mat-icon>
+        <h2>No recipes yet</h2>
+        <p>Paste any Instagram, TikTok, YouTube, or recipe website link above to save your first recipe.</p>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  @if (!loading() && allRecipes().length > 0 && recipes().length === 0) {
+    <mat-card class="empty-state">
+      <mat-card-content>
+        <mat-icon>filter_alt_off</mat-icon>
+        <h2>No recipes match current filters</h2>
+        <p>Try clearing tag or status filters to see all saved recipes.</p>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <div class="cards">
+    @for (recipe of recipes(); track recipe.id) {
+      <app-recipe-card
+        [recipe]="recipe"
+        [savedBy]="savedBy(recipe.createdBy)"
+        [confirmDelete]="confirmDeleteId() === recipe.id"
+        (open)="openRecipe(recipe.url)"
+        (requestDelete)="requestDelete(recipe.id)"
+        (cancelDelete)="cancelDelete()"
+        (confirmDeleteClick)="confirmDelete(recipe.id)"
+        (toggleStatus)="toggleStatus(recipe.id)"
+        (toggleTag)="toggleTag(recipe.id, $event)"
+        (notesBlur)="updateNotes(recipe.id, $event)"
+      />
+    }
+  </div>
+</section>

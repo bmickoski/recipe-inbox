@@ -1,0 +1,15 @@
+<header class="topbar">
+  <a class="brand" routerLink="/recipes">Recipe Inbox</a>
+
+  @if (user(); as currentUser) {
+    <div class="actions">
+      <a mat-stroked-button routerLink="/board/settings">Board</a>
+      <span class="email">{{ currentUser.email }}</span>
+      <button mat-stroked-button type="button" (click)="logout()">Logout</button>
+    </div>
+  }
+</header>
+
+<main class="page">
+  <router-outlet />
+</main>

@@ -1,0 +1,12 @@
+<mat-chip-listbox
+  [value]="activeCreatedBy"
+  (change)="createdByChange.emit($event.value)"
+  aria-label="Saved by filter"
+>
+  <mat-chip-option [value]="null">All people</mat-chip-option>
+  @for (member of members; track member.userId) {
+    <mat-chip-option [value]="member.userId">
+      {{ member.displayName || member.email }}
+    </mat-chip-option>
+  }
+</mat-chip-listbox>

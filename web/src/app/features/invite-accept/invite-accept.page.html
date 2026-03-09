@@ -1,0 +1,34 @@
+<section class="invite-shell">
+  <mat-card>
+    <mat-card-content>
+      <h1>Join Board</h1>
+      @if (invite(); as preview) {
+        <p>
+          <strong>{{ preview.sender.displayName || preview.sender.email }}</strong>
+          invited you to join this recipe board.
+        </p>
+        <p>
+          Board:
+          <strong>{{ preview.board.name }}</strong>
+          · {{ preview.board.memberCount }} member{{ preview.board.memberCount === 1 ? '' : 's' }}
+        </p>
+      } @else {
+        <p>Loading invite details...</p>
+      }
+
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
+
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        (click)="accept()"
+        [disabled]="loading() || !inviteToken()"
+      >
+        {{ loading() ? 'Please wait...' : 'Accept Invite' }}
+      </button>
+    </mat-card-content>
+  </mat-card>
+</section>
