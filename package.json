@@ -12,7 +12,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main.js",
     "db:migrate": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/db-migrate.ps1",
     "db:migrate:skip-generate": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/db-migrate.ps1 -SkipGenerate",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
