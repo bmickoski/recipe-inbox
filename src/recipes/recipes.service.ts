@@ -62,15 +62,25 @@ export class RecipesService {
   }
 
   async findByBoard(boardId: string, userId: string) {
-    const hasAccess = await this.hasBoardAccess(boardId, userId);
-    if (!hasAccess) {
+    const board = await this.prisma.board.findFirst({
+      where: {
+        id: boardId,
+        members: {
+          some: { userId },
+        },
+      },
+      select: {
+        recipes: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!board) {
       throw new ForbiddenException('You do not have access to this board');
     }
 
-    return this.prisma.recipe.findMany({
-      where: { boardId },
-      orderBy: { createdAt: 'desc' },
-    });
+    return board.recipes;
   }
 
   async remove(id: string, userId: string) {

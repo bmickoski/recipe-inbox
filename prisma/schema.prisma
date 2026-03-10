@@ -48,8 +48,8 @@ model Member {
   displayName String
   createdAt   DateTime @default(now())
 
-  board Board @relation(fields: [boardId], references: [id])
-  user  User  @relation(fields: [userId], references: [id])
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([boardId, userId])
 }
@@ -64,8 +64,8 @@ model BoardInvite {
   createdAt    DateTime     @default(now())
   acceptedAt   DateTime?
 
-  board  Board @relation(fields: [boardId], references: [id])
-  sender User  @relation("BoardInviteSender", fields: [invitedBy], references: [id])
+  board  Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  sender User  @relation("BoardInviteSender", fields: [invitedBy], references: [id], onDelete: Cascade)
 
   @@index([boardId, status])
 }
@@ -79,12 +79,16 @@ model Recipe {
   status      RecipeStatus @default(WANT_TO_TRY)
   cookedAt    DateTime?
   notes       String?
-  tags        String[]
+  tags        String[] @default([])
   createdAt   DateTime @default(now())
   createdBy   String
   boardId     String
   board       Board    @relation(fields: [boardId], references: [id])
   user        User     @relation(fields: [createdBy], references: [id])
+
+  @@index([boardId])
+  @@index([createdBy])
+  @@index([boardId, createdAt])
 }
 
 model PasswordResetToken {
