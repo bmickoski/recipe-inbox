@@ -36,9 +36,9 @@
 
 .description {
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  line-clamp: 4;
+  line-clamp: 3;
   overflow: hidden;
   word-break: break-word;
 }
@@ -54,7 +54,53 @@
   margin-top: 0.15rem;
 }
 
-.recipe-card mat-form-field {
+.card-actions-row {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
   margin-top: 0.75rem;
+}
+
+.details-panel {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.custom-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.custom-chip {
+  background: #e8f5e9;
+  font-size: 0.75rem;
+}
+
+.add-tag-btn {
+  color: #888;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  min-width: auto;
+  padding: 0 4px;
+}
+
+.tag-input-row {
+  margin-top: 0.25rem;
+}
+
+.tag-input-field {
+  width: 140px;
+
+  .mat-mdc-form-field-infix {
+    min-height: unset;
+    padding: 4px 0;
+  }
+}
+
+.recipe-card mat-form-field {
   width: 100%;
 }

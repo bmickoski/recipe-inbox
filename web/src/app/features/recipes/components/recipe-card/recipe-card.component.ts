@@ -4,6 +4,7 @@ import {
   EventEmitter,
   Input,
   Output,
+  signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -43,9 +44,54 @@ export class RecipeCardComponent {
   @Output() notesBlur = new EventEmitter<string>();
 
   readonly quickTags = RECIPE_TAGS;
+  readonly expanded = signal(false);
+  readonly showTagInput = signal(false);
+  readonly tagInputValue = signal('');
+
+  get customTags(): string[] {
+    return (this.recipe.tags ?? []).filter(
+      (tag) => !(this.quickTags as readonly string[]).includes(tag),
+    );
+  }
 
   toTagLabel(tag: string): string {
     return tag.charAt(0).toUpperCase() + tag.slice(1);
+  }
+
+  toggleExpanded() {
+    this.expanded.update((expanded) => !expanded);
+    if (!this.expanded()) {
+      this.showTagInput.set(false);
+      this.tagInputValue.set('');
+    }
+  }
+
+  openTagInput() {
+    this.showTagInput.set(true);
+    this.tagInputValue.set('');
+  }
+
+  submitCustomTag() {
+    const tag = this.tagInputValue().trim().toLowerCase();
+    if (tag && tag.length <= 24) {
+      this.toggleTag.emit(tag);
+    }
+    this.showTagInput.set(false);
+    this.tagInputValue.set('');
+  }
+
+  removeCustomTag(tag: string) {
+    this.toggleTag.emit(tag);
+  }
+
+  onTagInputKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.submitCustomTag();
+    }
+    if (event.key === 'Escape') {
+      this.showTagInput.set(false);
+    }
   }
 
   cookedLabel(): string {

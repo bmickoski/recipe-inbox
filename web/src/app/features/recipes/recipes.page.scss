@@ -1,6 +1,32 @@
 .recipes-shell {
   display: grid;
   gap: 1rem;
+  padding-bottom: 5.5rem;
+}
+
+.sticky-search {
+  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, #f8fafc 88%, white);
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.35rem 0 0.1rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.filters-row {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.filters-button {
+  justify-self: start;
+}
+
+.active-filter-chips {
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
 }
 
 .cards {
@@ -79,4 +105,27 @@
 
 .error {
   color: #b91c1c;
+}
+
+.add-fab {
+  bottom: 1rem;
+  position: fixed;
+  right: 1rem;
+  z-index: 20;
+}
+
+@media (min-width: 768px) {
+  .recipes-shell {
+    padding-bottom: 2rem;
+  }
+
+  .filters-row {
+    align-items: center;
+    grid-template-columns: auto 1fr;
+  }
+
+  .add-fab {
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
 }

@@ -13,50 +13,99 @@
       <small class="cooked-at">{{ cookedLabel() }}</small>
     }
     <p class="description">{{ recipe.description || recipe.url }}</p>
-    <mat-chip-listbox [multiple]="true" aria-label="Recipe tags and status">
-      <mat-chip-option
-        [selected]="recipe.status === 'COOKED'"
-        (click)="toggleStatus.emit()"
-      >
-        {{ recipe.status === 'COOKED' ? 'Cooked it' : 'Want to try' }}
-      </mat-chip-option>
-      @for (tag of recipe.tags; track tag) {
-        <mat-chip-option selected (click)="toggleTag.emit(tag)">{{
-          toTagLabel(tag)
-        }}</mat-chip-option>
-      }
-      @for (tag of quickTags; track tag) {
-        @if (!recipe.tags.includes(tag)) {
-          <mat-chip-option (click)="toggleTag.emit(tag)">+ {{ toTagLabel(tag) }}</mat-chip-option>
-        }
-      }
-    </mat-chip-listbox>
+    <div class="card-actions-row">
+      <mat-chip-listbox aria-label="Recipe status">
+        <mat-chip-option [selected]="recipe.status === 'COOKED'" (click)="toggleStatus.emit()">
+          {{ recipe.status === 'COOKED' ? 'Cooked it' : 'Want to try' }}
+        </mat-chip-option>
+      </mat-chip-listbox>
 
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>Notes</mat-label>
-      <textarea
-        matInput
-        rows="2"
-        [ngModel]="recipe.notes ?? ''"
-        (blur)="onNotesBlur($any($event.target).value)"
-        placeholder="Add notes like 'too spicy, reduce chili'"
-      ></textarea>
-    </mat-form-field>
+      <button mat-stroked-button type="button" (click)="toggleExpanded()">
+        <mat-icon>{{ expanded() ? 'expand_less' : 'expand_more' }}</mat-icon>
+        {{ expanded() ? 'Less' : 'Details' }}
+      </button>
+    </div>
+
+    @if (expanded()) {
+      <div class="details-panel">
+        <mat-chip-listbox [multiple]="true" aria-label="Recipe tags">
+          @for (tag of recipe.tags; track tag) {
+            <mat-chip-option selected (click)="toggleTag.emit(tag)">{{
+              toTagLabel(tag)
+            }}</mat-chip-option>
+          }
+          @for (tag of quickTags; track tag) {
+            @if (!recipe.tags.includes(tag)) {
+              <mat-chip-option (click)="toggleTag.emit(tag)">
+                + {{ toTagLabel(tag) }}
+              </mat-chip-option>
+            }
+          }
+        </mat-chip-listbox>
+
+        @if (customTags.length > 0) {
+          <div class="custom-tags">
+            @for (tag of customTags; track tag) {
+              <mat-chip class="custom-chip">
+                {{ tag }}
+                <button matChipRemove (click)="removeCustomTag(tag)" aria-label="Remove tag">
+                  <mat-icon>cancel</mat-icon>
+                </button>
+              </mat-chip>
+            }
+          </div>
+        }
+
+        @if (!showTagInput()) {
+          <button mat-button class="add-tag-btn" (click)="openTagInput()">
+            <mat-icon>label_outline</mat-icon> Add tag
+          </button>
+        } @else {
+          <div class="tag-input-row">
+            <mat-form-field appearance="outline" class="tag-input-field">
+              <input
+                matInput
+                placeholder="e.g. healthy, pasta..."
+                maxlength="24"
+                [ngModel]="tagInputValue()"
+                (ngModelChange)="tagInputValue.set($event)"
+                (keydown)="onTagInputKeydown($event)"
+                (blur)="submitCustomTag()"
+                autofocus
+              />
+            </mat-form-field>
+          </div>
+        }
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Notes</mat-label>
+          <textarea
+            matInput
+            rows="2"
+            [ngModel]="recipe.notes ?? ''"
+            (blur)="onNotesBlur($any($event.target).value)"
+            placeholder="Add notes like 'too spicy, reduce chili'"
+          ></textarea>
+        </mat-form-field>
+      </div>
+    }
   </mat-card-content>
   <mat-card-actions>
     <button mat-button type="button" (click)="open.emit()">
       <mat-icon>open_in_new</mat-icon> View
     </button>
 
-    @if (confirmDelete) {
-      <button mat-button type="button" color="warn" (click)="confirmDeleteClick.emit()">
-        Confirm?
-      </button>
-      <button mat-button type="button" (click)="cancelDelete.emit()">Cancel</button>
-    } @else {
-      <button mat-button type="button" color="warn" (click)="requestDelete.emit()">
-        Delete
-      </button>
+    @if (expanded()) {
+      @if (confirmDelete) {
+        <button mat-button type="button" color="warn" (click)="confirmDeleteClick.emit()">
+          Confirm?
+        </button>
+        <button mat-button type="button" (click)="cancelDelete.emit()">Cancel</button>
+      } @else {
+        <button mat-button type="button" color="warn" (click)="requestDelete.emit()">
+          Delete
+        </button>
+      }
     }
   </mat-card-actions>
 </mat-card>

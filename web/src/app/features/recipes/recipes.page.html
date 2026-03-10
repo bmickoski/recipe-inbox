@@ -6,34 +6,35 @@
     }
   </h1>
 
-  <app-add-recipe-bar
-    [value]="recipeUrl()"
-    [loading]="loading()"
-    (valueChange)="recipeUrl.set($event)"
-    (save)="saveRecipe()"
-  />
+  <div class="sticky-search">
+    <app-search-bar [value]="activeSearch()" (valueChange)="onSearchChange($event)" />
+
+    <div class="filters-row">
+      <button mat-stroked-button type="button" class="filters-button" (click)="openFilters()">
+        <mat-icon>tune</mat-icon>
+        Filters
+      </button>
+
+      @if (activeFilters().length > 0) {
+        <mat-chip-set class="active-filter-chips" aria-label="Active filters">
+          @for (filter of activeFilters(); track filter.key) {
+            <mat-chip-row (removed)="clearFilter(filter.key)">
+              {{ filter.label }}
+              <button matChipRemove aria-label="Remove filter">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-chip-row>
+          }
+        </mat-chip-set>
+      }
+    </div>
+  </div>
 
   @if (showNotifPrompt()) {
     <app-notification-prompt
       [partnerName]="partnerName()"
       (enable)="enableNotifications()"
       (dismiss)="dismissNotifPrompt()"
-    />
-  }
-
-  <app-status-filter-bar [activeStatus]="activeStatus()" (statusChange)="onStatusChange($event)" />
-
-  <app-tag-filter-bar
-    [tags]="tagCounts()"
-    [activeTag]="activeTag()"
-    (tagChange)="onTagChange($event)"
-  />
-
-  @if (members().length > 1) {
-    <app-saved-by-filter-bar
-      [members]="members()"
-      [activeCreatedBy]="activeCreatedBy()"
-      (createdByChange)="onCreatedByChange($event)"
     />
   }
 
@@ -71,8 +72,8 @@
     <mat-card class="empty-state">
       <mat-card-content>
         <mat-icon>filter_alt_off</mat-icon>
-        <h2>No recipes match current filters</h2>
-        <p>Try clearing tag or status filters to see all saved recipes.</p>
+        <h2>No recipes match</h2>
+        <p>Try clearing your search or filters.</p>
       </mat-card-content>
     </mat-card>
   }
@@ -93,4 +94,8 @@
       />
     }
   </div>
+
+  <button mat-fab color="primary" class="add-fab" type="button" (click)="openAddRecipeSheet()">
+    <mat-icon>add</mat-icon>
+  </button>
 </section>

@@ -10,31 +10,38 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SwPush } from '@angular/service-worker';
+import { firstValueFrom } from 'rxjs';
 import { PushNotificationService } from '../../core/services/push-notification.service';
+import { BoardMember } from '../../core/models/board.model';
 import { AuthStore } from '../../core/stores/auth.store';
 import { BoardStore } from '../../core/stores/board.store';
 import { RecipesStore } from '../../core/stores/recipes.store';
-import { AddRecipeBarComponent } from './components/add-recipe-bar/add-recipe-bar.component';
+import { AddRecipeSheetComponent } from './components/add-recipe-sheet/add-recipe-sheet.component';
+import {
+  FiltersSheetComponent,
+  FiltersSheetResult,
+} from './components/filters-sheet/filters-sheet.component';
 import { NotificationPromptComponent } from './components/notification-prompt/notification-prompt.component';
 import { RecipeCardComponent } from './components/recipe-card/recipe-card.component';
-import { SavedByFilterBarComponent } from './components/saved-by-filter-bar/saved-by-filter-bar.component';
-import { StatusFilterBarComponent } from './components/status-filter-bar/status-filter-bar.component';
-import { TagFilterBarComponent } from './components/tag-filter-bar/tag-filter-bar.component';
+import { SearchBarComponent } from './components/search-bar/search-bar.component';
+import { RecipeFilterStatus } from '../../core/stores/recipes.store';
 
 @Component({
   selector: 'app-recipes-page',
   imports: [
     CommonModule,
     MatCardModule,
+    MatButtonModule,
+    MatChipsModule,
     MatIconModule,
-    AddRecipeBarComponent,
     NotificationPromptComponent,
-    SavedByFilterBarComponent,
-    TagFilterBarComponent,
-    StatusFilterBarComponent,
+    SearchBarComponent,
     RecipeCardComponent,
   ],
   templateUrl: './recipes.page.html',
@@ -45,6 +52,7 @@ export class RecipesPage implements OnInit {
   private readonly authStore = inject(AuthStore);
   private readonly boardStore = inject(BoardStore);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly bottomSheet = inject(MatBottomSheet);
   private readonly pushNotificationService = inject(PushNotificationService);
   private readonly swPush = inject(SwPush);
   private readonly destroyRef = inject(DestroyRef);
@@ -59,6 +67,7 @@ export class RecipesPage implements OnInit {
   readonly tagCounts = this.recipesStore.tagCounts;
   readonly activeTag = this.recipesStore.activeTag;
   readonly activeStatus = this.recipesStore.activeStatus;
+  readonly activeSearch = this.recipesStore.activeSearch;
   readonly memberMap = this.boardStore.memberMap;
   readonly members = computed(() => this.boardStore.board()?.members ?? []);
   readonly loading = this.recipesStore.loading;
@@ -66,6 +75,22 @@ export class RecipesPage implements OnInit {
   readonly activeCreatedBy = this.recipesStore.activeCreatedBy;
   readonly initialLoading = signal(true);
   readonly showNotifPrompt = signal(false);
+  readonly activeFilters = computed(() => {
+    const filters: Array<{ key: 'status' | 'tag' | 'createdBy'; label: string }> = [];
+    if (this.activeStatus() !== 'ALL') {
+      filters.push({
+        key: 'status',
+        label: this.activeStatus() === 'COOKED' ? 'Cooked' : 'Want to try',
+      });
+    }
+    if (this.activeTag()) {
+      filters.push({ key: 'tag', label: `Tag: ${this.activeTag()}` });
+    }
+    if (this.activeCreatedBy()) {
+      filters.push({ key: 'createdBy', label: `Saved by: ${this.savedBy(this.activeCreatedBy()!)}` });
+    }
+    return filters;
+  });
   readonly partnerName = computed(() => {
     const currentUserId = this.authStore.user()?.id;
     const partner = this.boardStore
@@ -110,8 +135,8 @@ export class RecipesPage implements OnInit {
     }
   }
 
-  async saveRecipe() {
-    const url = this.recipeUrl().trim();
+  async saveRecipe(nextUrl?: string) {
+    const url = (nextUrl ?? this.recipeUrl()).trim();
     if (!url) return;
 
     const boardId = this.boardStore.boardId();
@@ -165,6 +190,65 @@ export class RecipesPage implements OnInit {
     this.recipesStore.setActiveCreatedBy(createdBy);
   }
 
+  onSearchChange(query: string) {
+    this.recipesStore.setActiveSearch(query);
+  }
+
+  async openFilters() {
+    const ref = this.bottomSheet.open<
+      FiltersSheetComponent,
+      {
+        activeStatus: RecipeFilterStatus;
+        activeTag: string | null;
+        activeCreatedBy: string | null;
+        tags: Array<{ tag: string; count: number }>;
+        members: BoardMember[];
+      },
+      FiltersSheetResult | undefined
+    >(FiltersSheetComponent, {
+      data: {
+        activeStatus: this.activeStatus(),
+        activeTag: this.activeTag(),
+        activeCreatedBy: this.activeCreatedBy(),
+        tags: this.tagCounts(),
+        members: this.members(),
+      },
+    });
+
+    const result = await firstValueFrom(ref.afterDismissed());
+    if (!result) return;
+    this.recipesStore.setActiveStatus(result.status);
+    this.recipesStore.setActiveTag(result.tag);
+    this.recipesStore.setActiveCreatedBy(result.createdBy);
+  }
+
+  clearFilter(key: 'status' | 'tag' | 'createdBy') {
+    if (key === 'status') {
+      this.recipesStore.setActiveStatus('ALL');
+      return;
+    }
+    if (key === 'tag') {
+      this.recipesStore.setActiveTag(null);
+      return;
+    }
+    this.recipesStore.setActiveCreatedBy(null);
+  }
+
+  async openAddRecipeSheet(prefill = this.recipeUrl()) {
+    const ref = this.bottomSheet.open<
+      AddRecipeSheetComponent,
+      { value: string },
+      string | undefined
+    >(AddRecipeSheetComponent, {
+      data: { value: prefill },
+    });
+
+    const nextUrl = await firstValueFrom(ref.afterDismissed());
+    if (!nextUrl) return;
+    this.recipeUrl.set(nextUrl);
+    await this.saveRecipe(nextUrl);
+  }
+
   async toggleStatus(recipeId: string) {
     const recipe = this.recipesStore.items().find((item) => item.id === recipeId);
     if (!recipe) return;
@@ -211,9 +295,7 @@ export class RecipesPage implements OnInit {
     if (!sharedUrl) return;
 
     this.recipeUrl.set(sharedUrl);
-    this.snackBar.open('Shared link detected. Tap Save to add it.', undefined, {
-      duration: 2500,
-    });
+    await this.openAddRecipeSheet(sharedUrl);
 
     await this.router.navigate([], {
       relativeTo: this.route,

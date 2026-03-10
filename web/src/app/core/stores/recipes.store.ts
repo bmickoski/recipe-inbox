@@ -19,6 +19,7 @@ type RecipesState = {
   activeTag: string | null;
   activeStatus: RecipeFilterStatus;
   activeCreatedBy: string | null;
+  activeSearch: string;
 };
 
 const initialState: RecipesState = {
@@ -28,6 +29,7 @@ const initialState: RecipesState = {
   activeTag: null,
   activeStatus: 'ALL',
   activeCreatedBy: null,
+  activeSearch: '',
 };
 
 export const RecipesStore = signalStore(
@@ -46,6 +48,7 @@ export const RecipesStore = signalStore(
         .sort((a, b) => b.count - a.count);
     }),
     filteredRecipes: computed(() => {
+      const query = store.activeSearch().trim().toLowerCase();
       return store.items().filter((recipe) => {
         const statusOk =
           store.activeStatus() === 'ALL' || recipe.status === store.activeStatus();
@@ -53,7 +56,12 @@ export const RecipesStore = signalStore(
           !store.activeTag() || (recipe.tags ?? []).includes(store.activeTag() as string);
         const createdByOk =
           !store.activeCreatedBy() || recipe.createdBy === store.activeCreatedBy();
-        return statusOk && tagOk && createdByOk;
+        const searchOk =
+          !query ||
+          (recipe.title ?? '').toLowerCase().includes(query) ||
+          (recipe.description ?? '').toLowerCase().includes(query) ||
+          (recipe.notes ?? '').toLowerCase().includes(query);
+        return statusOk && tagOk && createdByOk && searchOk;
       });
     }),
   })),
@@ -68,6 +76,10 @@ export const RecipesStore = signalStore(
 
     setActiveCreatedBy(createdBy: string | null) {
       patchState(store, { activeCreatedBy: createdBy });
+    },
+
+    setActiveSearch(query: string) {
+      patchState(store, { activeSearch: query });
     },
 
     async loadRecipes(boardId: string) {
