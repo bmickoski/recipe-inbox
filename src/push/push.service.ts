@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 type NotificationPayload = {
   title: string;
   body: string;
+  recipeId?: string;
 };
 
 @Injectable()
@@ -90,7 +91,7 @@ export class PushService {
           title: payload.title,
           body: payload.body,
           icon: '/icons/icon-192.png',
-          data: { url: '/recipes' },
+          data: { url: '/recipes', recipeId: payload.recipeId ?? null },
         },
       });
 

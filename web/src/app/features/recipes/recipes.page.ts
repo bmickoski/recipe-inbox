@@ -1,13 +1,24 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { SwPush } from '@angular/service-worker';
 import { PushNotificationService } from '../../core/services/push-notification.service';
+import { AuthStore } from '../../core/stores/auth.store';
 import { BoardStore } from '../../core/stores/board.store';
 import { RecipesStore } from '../../core/stores/recipes.store';
 import { AddRecipeBarComponent } from './components/add-recipe-bar/add-recipe-bar.component';
+import { NotificationPromptComponent } from './components/notification-prompt/notification-prompt.component';
 import { RecipeCardComponent } from './components/recipe-card/recipe-card.component';
 import { SavedByFilterBarComponent } from './components/saved-by-filter-bar/saved-by-filter-bar.component';
 import { StatusFilterBarComponent } from './components/status-filter-bar/status-filter-bar.component';
@@ -20,6 +31,7 @@ import { TagFilterBarComponent } from './components/tag-filter-bar/tag-filter-ba
     MatCardModule,
     MatIconModule,
     AddRecipeBarComponent,
+    NotificationPromptComponent,
     SavedByFilterBarComponent,
     TagFilterBarComponent,
     StatusFilterBarComponent,
@@ -30,9 +42,12 @@ import { TagFilterBarComponent } from './components/tag-filter-bar/tag-filter-ba
 })
 export class RecipesPage implements OnInit {
   private readonly recipesStore = inject(RecipesStore);
+  private readonly authStore = inject(AuthStore);
   private readonly boardStore = inject(BoardStore);
   private readonly snackBar = inject(MatSnackBar);
   private readonly pushNotificationService = inject(PushNotificationService);
+  private readonly swPush = inject(SwPush);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -50,8 +65,26 @@ export class RecipesPage implements OnInit {
   readonly error = this.recipesStore.error;
   readonly activeCreatedBy = this.recipesStore.activeCreatedBy;
   readonly initialLoading = signal(true);
+  readonly showNotifPrompt = signal(false);
+  readonly partnerName = computed(() => {
+    const currentUserId = this.authStore.user()?.id;
+    const partner = this.boardStore
+      .board()
+      ?.members?.find((member) => member.userId !== currentUserId);
+    return partner?.displayName ?? 'your partner';
+  });
 
   ngOnInit(): void {
+    this.swPush.notificationClicks
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ notification }) => {
+        const recipeId = notification.data?.recipeId;
+        if (recipeId) {
+          const title = notification.body ?? 'New recipe';
+          this.snackBar.open(title, undefined, { duration: 3000 });
+        }
+      });
+
     void this.initializePage();
   }
 
@@ -60,7 +93,12 @@ export class RecipesPage implements OnInit {
       const board = await this.boardStore.loadOrCreateBoard();
       if (!board?.id) return;
       await this.recipesStore.loadRecipes(board.id);
-      await this.pushNotificationService.requestPermissionAndSubscribe();
+      const hasPartner = (this.boardStore.board()?.members?.length ?? 0) > 1;
+      const permissionDefault = Notification.permission === 'default';
+      const swEnabled = this.swPush.isEnabled;
+      if (hasPartner && permissionDefault && swEnabled) {
+        this.showNotifPrompt.set(true);
+      }
       await this.consumeSharedUrlParams();
     } finally {
       this.initialLoading.set(false);
@@ -138,6 +176,28 @@ export class RecipesPage implements OnInit {
     const recipe = this.recipesStore.items().find((item) => item.id === recipeId);
     if (!recipe) return;
     await this.recipesStore.updateNotes(recipe, notes);
+  }
+
+  async enableNotifications() {
+    this.showNotifPrompt.set(false);
+    const result = await this.pushNotificationService.requestPermissionAndSubscribe();
+    if (result === 'ios-unsupported') {
+      this.snackBar.open(
+        'Notifications not supported on iOS Safari. Use Android or Chrome.',
+        undefined,
+        { duration: 5000 },
+      );
+    } else if (result === 'denied') {
+      this.snackBar.open(
+        'Notifications blocked. Enable them in your browser settings.',
+        undefined,
+        { duration: 4000 },
+      );
+    }
+  }
+
+  dismissNotifPrompt() {
+    this.showNotifPrompt.set(false);
   }
 
   private async consumeSharedUrlParams() {

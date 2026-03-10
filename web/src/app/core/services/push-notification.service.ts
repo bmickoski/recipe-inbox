@@ -4,16 +4,25 @@ import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiService } from './api.service';
 
+export type PushSubscribeResult =
+  | 'subscribed'
+  | 'ios-unsupported'
+  | 'denied'
+  | 'skipped';
+
 @Injectable({ providedIn: 'root' })
 export class PushNotificationService {
   private readonly swPush = inject(SwPush);
   private readonly api = inject(ApiService);
 
-  async requestPermissionAndSubscribe(): Promise<void> {
+  async requestPermissionAndSubscribe(): Promise<PushSubscribeResult> {
     try {
-      if (!this.swPush.isEnabled) return;
-      if (!environment.vapidPublicKey) return;
-      if (Notification.permission === 'denied') return;
+      const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIos) return 'ios-unsupported';
+
+      if (!this.swPush.isEnabled) return 'skipped';
+      if (!environment.vapidPublicKey) return 'skipped';
+      if (Notification.permission === 'denied') return 'denied';
 
       const subscription = await this.swPush.requestSubscription({
         serverPublicKey: environment.vapidPublicKey,
@@ -24,11 +33,13 @@ export class PushNotificationService {
       const p256dh = json.keys?.['p256dh'];
       const auth = json.keys?.['auth'];
 
-      if (!endpoint || !p256dh || !auth) return;
+      if (!endpoint || !p256dh || !auth) return 'skipped';
 
       await firstValueFrom(this.api.subscribePush({ endpoint, p256dh, auth }));
+      return 'subscribed';
     } catch {
       // Push is enhancement only; never block the app flow.
+      return 'skipped';
     }
   }
 }

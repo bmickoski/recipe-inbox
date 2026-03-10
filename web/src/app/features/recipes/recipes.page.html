@@ -13,6 +13,14 @@
     (save)="saveRecipe()"
   />
 
+  @if (showNotifPrompt()) {
+    <app-notification-prompt
+      [partnerName]="partnerName()"
+      (enable)="enableNotifications()"
+      (dismiss)="dismissNotifPrompt()"
+    />
+  }
+
   <app-status-filter-bar [activeStatus]="activeStatus()" (statusChange)="onStatusChange($event)" />
 
   <app-tag-filter-bar

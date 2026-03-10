@@ -23,7 +23,7 @@ export class RecipesService {
   async create(data: CreateRecipeDto, userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true },
+      select: { id: true, displayName: true },
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -53,8 +53,9 @@ export class RecipesService {
     });
 
     void this.pushService.notifyBoardMembers(data.boardId, userId, {
-      title: 'New recipe added!',
+      title: `${user.displayName} saved a recipe`,
       body: recipe.title ?? 'A new recipe was saved to your board',
+      recipeId: recipe.id,
     });
 
     return recipe;
@@ -84,13 +85,25 @@ export class RecipesService {
           },
         },
       },
-      select: { id: true },
+      select: { id: true, title: true, boardId: true },
     });
     if (!recipe) {
       throw new NotFoundException('Recipe not found');
     }
 
-    return this.prisma.recipe.delete({ where: { id } });
+    const deleted = await this.prisma.recipe.delete({ where: { id } });
+
+    const sender = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { displayName: true },
+    });
+
+    void this.pushService.notifyBoardMembers(recipe.boardId, userId, {
+      title: `${sender?.displayName ?? 'Someone'} removed a recipe`,
+      body: recipe.title ?? 'A recipe was removed from your board',
+    });
+
+    return deleted;
   }
 
   async update(id: string, userId: string, data: UpdateRecipeDto) {
@@ -128,7 +141,24 @@ export class RecipesService {
       nextData.notes = data.notes?.trim() ? data.notes.trim() : null;
     }
 
-    return this.prisma.recipe.update({ where: { id }, data: nextData });
+    const updatedRecipe = await this.prisma.recipe.update({
+      where: { id },
+      data: nextData,
+    });
+
+    if (nextData.status === RecipeStatusDto.COOKED) {
+      const sender = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { displayName: true },
+      });
+      void this.pushService.notifyBoardMembers(updatedRecipe.boardId, userId, {
+        title: `${sender?.displayName ?? 'Someone'} cooked a recipe!`,
+        body: updatedRecipe.title ?? 'They marked a recipe as cooked',
+        recipeId: updatedRecipe.id,
+      });
+    }
+
+    return updatedRecipe;
   }
 
   private async extractMetadata(url: string) {
