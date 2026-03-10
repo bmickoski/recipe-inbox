@@ -94,10 +94,15 @@ export class RecipesPage implements OnInit {
       if (!board?.id) return;
       await this.recipesStore.loadRecipes(board.id);
       const hasPartner = (this.boardStore.board()?.members?.length ?? 0) > 1;
-      const permissionDefault = Notification.permission === 'default';
+      const permission = Notification.permission;
       const swEnabled = this.swPush.isEnabled;
-      if (hasPartner && permissionDefault && swEnabled) {
-        this.showNotifPrompt.set(true);
+      if (hasPartner && swEnabled) {
+        if (permission === 'default') {
+          this.showNotifPrompt.set(true);
+        } else if (permission === 'granted') {
+          // Silently re-subscribe (handles failed saves from previous sessions)
+          void this.pushNotificationService.requestPermissionAndSubscribe();
+        }
       }
       await this.consumeSharedUrlParams();
     } finally {
